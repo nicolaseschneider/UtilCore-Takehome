@@ -7,8 +7,8 @@ Rails.application.routes.draw do
   resources :trips do
     member do
       put :reassign
-      put :check_in
-      put :check_out
+      patch :check_in
+      patch :check_out
     end
   end
 end

@@ -1,6 +1,6 @@
 class TripsController < ApplicationController
 
-    # GET /TRIPS
+    # GET /trips
     def index
         assignments = TripAssignment.includes(:trip)
             .where('owner_id = ? OR assignee_id = ?', @current_user.id, @current_user.id)
@@ -9,27 +9,36 @@ class TripsController < ApplicationController
         render json: assignments.map { |assignment| assignment_as_json(assignment) }
     end
 
+    # GET /trips/:id
+    def show
+        assignments = TripAssignment.includes(:trip)
+            .where('owner_id = ? OR assignee_id = ?', @current_user.id, @current_user.id)
+            .where('trip_id = ?', params[:id])
+            .references(:trip)
+        render json: assignments.map { |assignment| assignment_as_json(assignment) }
+    end
+
+    # POST /trips
     def create
         trip = Trip.new(trip_params)
         if trip.save
-            renderable = trip.as_json
-            renderable["assignee_id"] = trip_params[:trip_assignments_attributes][0][:assignee_id]
-            renderable["owner_id"] = @current_user.id
-            render json: renderable, status: :created
+            trip_assignment = Trip.includes(:trip_assignments).find(trip.id).trip_assignments.last
+            render json: assignment_as_json(trip_assignment), status: :created
         else
-            render json: task.errors, status: :unprocessable_entity
+            render json: trip.errors, status: :unprocessable_entity
         end
     end
 
+    # PATCH /trips/:id/check_in
     def check_in
         trip = Trip.includes(:trip_assignments).find(params[:id])
-
+        most_recent_assignment = trip.trip_assignments.last
         if trip.status == "in progress"
             render json: { error: "Trip already checked in!" }, status: :bad_request
             return
         end
 
-        if trip.trip_assignments.last.assignee_id == @current_user.id 
+        if most_recent_assignment.assignee_id == @current_user.id 
             trip.update_columns(check_in_time: Time.current, status: "in progress")
             render json: trip, status: :ok
         else
@@ -37,16 +46,16 @@ class TripsController < ApplicationController
         end
     end
 
-    
+    # PATCH /trips/:id/check_out
     def check_out
         trip = Trip.includes(:trip_assignments).find(params[:id])
-
+        most_recent_assignment = trip.trip_assignments.last
         if trip.status != "in progress"
             render json: { error: "Cannot check out a trip not in progress"}, status: :bad_request
             return
         end
 
-        if trip.trip_assignments.last.assignee_id == @current_user.id
+        if most_recent_assignment.assignee_id == @current_user.id
             trip.update_columns(check_out_time: Time.current, status: "completed")
             render json: trip, status: :ok
         else
@@ -68,19 +77,29 @@ class TripsController < ApplicationController
     def reassign
         trip = Trip.includes(:trip_assignments).find(params[:id])
 
+        if trip.status != "unstarted"
+            render json: { error: "Only an unstarted trip may be reassigned"}, status: :bad_request
+            return
+        end
+
         if trip.trip_assignments.last.assignee_id != @current_user.id 
             render json: { error: 'Not authorized' }, status: :unauthorized
             return
         end
         
         trip.trip_assignments.each do |assignment| 
-            if assignment.id == reassignment_params[:assignee_id]
-                render json: { error: 'This user was already assigned this trip'}, status: :bad_request
+            if assignment.assignee_id == reassignment_params[:assignee_id] or assignment.owner_id == reassignment_params[:assignee_id]
+                render json: { error: 'This user was already involved with this trip'}, status: :bad_request
                 return
             end
         end
-
         
+        trip_assignment = TripAssignment.new(trip_id: trip.id, owner_id: @current_user.id, assignee_id: reassignment_params[:assignee_id])
+        if trip_assignment.save
+            render json: { success: true, message: 'Trip assignment created.' }
+        else
+            render json: { success: false, message: trip_assignment.errors.full_messages.to_sentence }
+        ends
 
     end
 

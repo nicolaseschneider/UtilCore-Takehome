@@ -10,13 +10,13 @@ class TripsController < ApplicationController
     end
 
     # GET /trips/:id
-    def show
-        assignments = TripAssignment.includes(:trip)
-            .where('owner_id = ? OR assignee_id = ?', @current_user.id, @current_user.id)
-            .where('trip_id = ?', params[:id])
-            .references(:trip)
-        render json: assignments.map { |assignment| assignment_as_json(assignment) }
-    end
+    # def show
+    #     assignments = TripAssignment.includes(:trip)
+    #         .where('owner_id = ? OR assignee_id = ?', @current_user.id, @current_user.id)
+    #         .where('trip_id = ?', params[:id])
+    #         .references(:trip)
+    #     render json: assignments.map { |assignment| assignment_as_json(assignment) }
+    # end
 
     # POST /trips
     def create
@@ -63,15 +63,15 @@ class TripsController < ApplicationController
         end
     end
     
-    # PATCH/PUT /trips/:id
-    def update
-        trip = Trip.find(params[:id])
-        if trip.update(update_trip_params)
-            render json: trip
-        else
-            render json: trip.errors, status: :unprocessable_entity
-        end
-    end
+    # # PATCH/PUT /trips/:id
+    # def update
+    #     trip = Trip.find(params[:id])
+    #     if trip.update(update_trip_params)
+    #         render json: trip
+    #     else
+    #         render json: trip.errors, status: :unprocessable_entity
+    #     end
+    # end
 
     # PUT /trips/:id/reassign
     def reassign
@@ -119,9 +119,9 @@ class TripsController < ApplicationController
         parameters
     end
 
-    def update_trip_params
-        params.require(:trip).permit(:estimated_arrival_time, :estimated_completion_time)
-    end
+    # def update_trip_params
+    #     params.require(:trip).permit(:estimated_arrival_time, :estimated_completion_time)
+    # end
 
     def assignment_as_json(assignment)
         json = assignment.trip.attributes

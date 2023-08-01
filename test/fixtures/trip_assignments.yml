@@ -1,0 +1,11 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  trip: one
+  owner: one
+  assignee: one
+
+two:
+  trip: two
+  owner: two
+  assignee: two

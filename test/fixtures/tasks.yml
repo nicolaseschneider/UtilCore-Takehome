@@ -1,0 +1,15 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  status: MyString
+  estimated_arrival_time: 2023-07-31 20:18:41
+  estimated_completion_time: 2023-07-31 20:18:41
+  check_in_time: 2023-07-31 20:18:41
+  check_out_time: 2023-07-31 20:18:41
+
+two:
+  status: MyString
+  estimated_arrival_time: 2023-07-31 20:18:41
+  estimated_completion_time: 2023-07-31 20:18:41
+  check_in_time: 2023-07-31 20:18:41
+  check_out_time: 2023-07-31 20:18:41

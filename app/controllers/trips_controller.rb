@@ -99,7 +99,7 @@ class TripsController < ApplicationController
             render json: { success: true, message: 'Trip assignment created.' }
         else
             render json: { success: false, message: trip_assignment.errors.full_messages.to_sentence }
-        ends
+        end
 
     end
 
